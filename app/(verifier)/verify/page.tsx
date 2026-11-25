@@ -23,6 +23,9 @@ export default function VerifyPage() {
         <p className="text-gray-500 text-sm mb-8 max-w-sm mx-auto">
           Instantly verify the authenticity of any credential issued on the Credibly network.
         </p>
+        <p className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-2 mb-5">
+          Public verification. No wallet connection or sign-in required.
+        </p>
 
         <div className="bg-white rounded-xl border border-gray-200 p-2 flex flex-col sm:flex-row gap-2">
           <div className="relative flex-1">

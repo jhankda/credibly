@@ -1,9 +1,30 @@
 # Credibly — Decentralized Academic Credential Verification System
-### Built with Next.js 14 + Solana
+### Built with Next.js 16 + Solana
 
-> **Author:** piyyu | **Stack:** Next.js 14 (App Router) · Solana · Anchor · IPFS · SSI · ZK Proofs
+> **Author:** piyyu | **Stack:** Next.js 16 (App Router) · Solana · Anchor · IPFS · SSI · ZK Proofs
 
-Credibly is a blockchain-powered platform that eliminates fake academic credentials and replaces slow, costly verification with instant, cryptographically secure checks. This edition replaces Ethereum/Hyperledger with **Solana** for high-throughput, low-cost on-chain operations and uses **Next.js 14 App Router** as the unified full-stack framework.
+## Run the web app
+
+Requirements: Node.js 20.9 or later and npm.
+
+```bash
+npm ci
+cp .env.local.example .env.local
+npm run dev
+```
+
+Open <http://localhost:3000>. The web interface can be explored without Solana,
+Pinata, or DigiLocker credentials. Those integrations need their corresponding
+credentials and a deployed Anchor program before issuance or connected-service
+flows will work. For a production build, run `npm run build` and then
+`npm start`. `npm run lint` and `npm run typecheck` check source quality and
+TypeScript types.
+
+Before issuing credentials, set `PINATA_API_KEY` and `PINATA_SECRET` in
+`.env.local` using credentials from your Pinata account, then restart the dev
+server. Without them, credential upload returns a configuration error.
+
+Credibly is a blockchain-powered platform that eliminates fake academic credentials and replaces slow, costly verification with instant, cryptographically secure checks. This edition replaces Ethereum/Hyperledger with **Solana** for high-throughput, low-cost on-chain operations and uses **Next.js App Router** as the unified full-stack framework.
 
 ---
 
@@ -54,7 +75,7 @@ Solana's near-zero fees make per-credential on-chain anchoring economically viab
 
 ```
 ┌────────────────────────────────────────────────────────────────────┐
-│                     CREDIBLY (Next.js 14)                          │
+│                     CREDIBLY (Next.js 16)                          │
 │                                                                    │
 │  /app                                                              │
 │  ├── (institution)/dashboard   → Bulk issuance, revocation, logs   │
@@ -89,7 +110,7 @@ registry      registry
 
 | Layer | Technology |
 |---|---|
-| Full-stack Framework | Next.js 14 (App Router, Server Actions) |
+| Full-stack Framework | Next.js 16 (App Router, Server Actions) |
 | Blockchain | Solana (Devnet → Mainnet-beta) |
 | Smart Contracts | Anchor (Rust) |
 | On-chain Accounts | Solana PDAs (Program Derived Addresses) |
@@ -121,7 +142,7 @@ credibly/
 │   │   └── credibly.ts             # Anchor integration tests
 │   └── Anchor.toml
 │
-├── app/                            # Next.js 14 App Router
+├── app/                            # Next.js 16 App Router
 │   ├── (institution)/
 │   │   └── dashboard/
 │   │       ├── page.tsx
@@ -1934,7 +1955,7 @@ docker-compose up --build
 
 - [Solana Docs](https://docs.solana.com)
 - [Anchor Framework](https://www.anchor-lang.com)
-- [Next.js 14 App Router](https://nextjs.org/docs/app)
+- [Next.js 16 App Router](https://nextjs.org/docs/app)
 - [Solana Wallet Adapter](https://github.com/solana-labs/wallet-adapter)
 - [W3C Verifiable Credentials](https://www.w3.org/TR/vc-data-model/)
 - [W3C Decentralized Identifiers](https://www.w3.org/TR/did-core/)

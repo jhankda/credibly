@@ -4,12 +4,19 @@ import { AnchorProvider, Program } from "@coral-xyz/anchor";
 import idl from "@/lib/solana/idl/credibly.json";
 import type { Credibly } from "@/lib/solana/idl/credibly";
 
-const connection = new Connection(process.env.NEXT_PUBLIC_SOLANA_RPC_URL!);
-const PROGRAM_ID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "11111111111111111111111111111111");
+const connection = new Connection(
+  process.env.NEXT_PUBLIC_SOLANA_RPC_URL || "https://api.devnet.solana.com"
+);
+const PROGRAM_ID = new PublicKey(
+  process.env.NEXT_PUBLIC_PROGRAM_ID || "HYLVH9iBUSroAyDViFn6fY7WirfPuv1kG89TCyvAz5fx"
+);
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ hash: string }> }) {
   try {
     const resolvedParams = await params;
+    if (!/^[0-9a-fA-F]{64}$/.test(resolvedParams.hash)) {
+      return NextResponse.json({ valid: false, exists: false }, { status: 400 });
+    }
     const hashBuf = Buffer.from(resolvedParams.hash, "hex");
     const [credentialPDA] = PublicKey.findProgramAddressSync(
       [Buffer.from("credential"), hashBuf],

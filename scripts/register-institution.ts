@@ -53,7 +53,7 @@ async function main() {
     },
   };
 
-  const provider = new AnchorProvider(connection, wallet as any, {
+  const provider = new AnchorProvider(connection, wallet as never, {
     commitment: "confirmed",
   });
   const program = new Program(idl, provider);
@@ -75,11 +75,12 @@ async function main() {
     console.log("✅ Institution registered successfully!");
     console.log("Transaction:", txSig);
     console.log(`Explorer: https://explorer.solana.com/tx/${txSig}?cluster=devnet`);
-  } catch (err: any) {
-    if (err.message?.includes("already in use")) {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    if (message.includes("already in use")) {
       console.log("ℹ️  Institution is already registered.");
     } else {
-      console.error("❌ Registration failed:", err.message);
+      console.error("❌ Registration failed:", message);
     }
   }
 }

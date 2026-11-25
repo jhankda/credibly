@@ -15,7 +15,7 @@ export default function SharePage({ params }: { params: Promise<{ id: string }> 
   }, [id]);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(verifyURL);
+    navigator.clipboard.writeText(id);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -49,16 +49,20 @@ export default function SharePage({ params }: { params: Promise<{ id: string }> 
           </div>
 
           <div>
-            <p className="text-[11px] uppercase tracking-wider font-semibold text-gray-400 mb-1.5">Link</p>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                readOnly
-                value={verifyURL}
-                className="flex-1 bg-gray-50 border border-gray-100 rounded-lg px-3 py-2 text-xs text-gray-600 font-mono focus:outline-none"
-              />
+            <p className="text-[11px] uppercase tracking-wider font-semibold text-gray-400 mb-1.5">Credential Hash</p>
+            <div className="flex gap-2 items-center">
+              <a
+                href={verifyURL}
+                target="_blank"
+                rel="noreferrer"
+                className="flex-1 min-w-0 bg-gray-50 border border-gray-100 rounded-lg px-3 py-2 text-xs text-blue-700 font-mono break-all hover:underline"
+              >
+                {id}
+              </a>
               <button
                 onClick={handleCopy}
+                title={copied ? "Hash copied" : "Copy credential hash"}
+                aria-label={copied ? "Hash copied" : "Copy credential hash"}
                 className="px-3 py-2 bg-gray-50 hover:bg-gray-100 text-gray-600 rounded-lg transition-colors border border-gray-100"
               >
                 {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}

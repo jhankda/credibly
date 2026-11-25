@@ -1,6 +1,7 @@
 import { Program, web3 } from "@coral-xyz/anchor";
 import type { Credibly } from "./idl/credibly";
 import { getCredentialPDA } from "./client";
+import { invalidateWalletRole } from "./useWalletRole";
 import type { VerifiableCredential } from "@/lib/ipfs/upload";
 
 export async function issueCredentialOnChain(
@@ -31,6 +32,28 @@ export async function issueCredentialOnChain(
   console.log("Issuer:", issuer.toBase58());
   console.log("Expected Institution PDA:", institutionAccount.toBase58());
 
+  // The on-chain issue instruction requires the issuer to be in the trust
+  // registry. Register this wallet on first use; the wallet signs and pays.
+  const existingInstitution = await program.provider.connection.getAccountInfo(
+    institutionAccount,
+    "confirmed"
+  );
+  if (!existingInstitution) {
+    const institutionName =
+      typeof vc.credentialSubject.institution === "string"
+        ? vc.credentialSubject.institution
+        : "Credibly Institution";
+    await program.methods
+      .registerInstitution(
+        institutionName,
+        2,
+        `did:sol:${issuer.toBase58()}`
+      )
+      .accounts({ institution: issuer, authority: issuer })
+      .rpc();
+    invalidateWalletRole(issuer.toBase58());
+  }
+
   // Step 2: Submit on-chain tx from the browser wallet
   let txSig: string;
   try {
@@ -42,8 +65,9 @@ export async function issueCredentialOnChain(
       )
       .accounts({ issuer })
       .rpc();
-  } catch (err: any) {
-    if (err.message && err.message.includes("already been processed")) {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    if (message.includes("already been processed")) {
       console.warn("Transaction was confirmed but RPC reported it as already processed (common network jitter). Treating as success.");
       // We don't have the exact txSig unfortunately since it errored, but we know it succeeded
       txSig = "already_processed_check_explorer";

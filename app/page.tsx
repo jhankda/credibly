@@ -1,9 +1,50 @@
 "use client";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion, Variants } from "framer-motion";
 import { ArrowRight, ShieldCheck, Zap, Database, GraduationCap, Building2, CheckCircle2, Globe } from "lucide-react";
+import { useWalletRole } from "@/lib/solana/useWalletRole";
 
 export default function Home() {
+  const role = useWalletRole();
+  const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (role === "institution") router.replace("/dashboard");
+    else if (role === "student") router.replace("/wallet");
+  }, [role, router]);
+
+  // While checking wallet role or while redirecting to the detected role workspace,
+  // show a clean transition state to eliminate the split-second landing page flicker
+  if (!mounted || role === "loading" || role === "institution" || role === "student") {
+    return (
+      <div className="flex-1 grid place-items-center min-h-[70vh] text-sm text-gray-500">
+        <div className="flex flex-col items-center gap-2.5">
+          <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+          <span className="text-gray-600 font-medium">Opening your Credibly workspace…</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (role === "unknown") {
+    return (
+      <div className="flex-1 grid place-items-center px-6 min-h-[70vh] text-center text-sm text-gray-500">
+        Could not check the connected wallet. Check the network and reconnect, or{" "}
+        <Link className="ml-1 text-emerald-700 underline" href="/verify">
+          verify a credential without a wallet
+        </Link>
+        .
+      </div>
+    );
+  }
+
   const fadeUp: Variants = {
     hidden: { opacity: 0, y: 24 },
     show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },

@@ -1,5 +1,5 @@
 const { AnchorProvider, Program } = require("@coral-xyz/anchor");
-const { Connection, PublicKey, Keypair } = require("@solana/web3.js");
+const { Connection, Keypair } = require("@solana/web3.js");
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
@@ -32,7 +32,7 @@ async function main() {
       .signers([authority])
       .rpc();
     console.log("Registered CLI wallet as institution.");
-  } catch(e) {
+  } catch {
     // ignore if already registered
   }
 

@@ -4,7 +4,9 @@ import { AnchorProvider, Program } from "@coral-xyz/anchor";
 import idl from "@/lib/solana/idl/credibly.json";
 import type { Credibly } from "@/lib/solana/idl/credibly";
 
-const connection = new Connection(process.env.NEXT_PUBLIC_SOLANA_RPC_URL!);
+const connection = new Connection(
+  process.env.NEXT_PUBLIC_SOLANA_RPC_URL || "https://api.devnet.solana.com"
+);
 const PROGRAM_ID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "11111111111111111111111111111111");
 
 /**

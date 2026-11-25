@@ -1,7 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useCrediblyProgram, getCredentialPDA } from "@/lib/solana/client";
+import { recordOptimisticActivity } from "@/lib/solana/activity";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShieldAlert, AlertTriangle, Key, Info } from "lucide-react";
 
@@ -14,6 +15,13 @@ export default function RevokePage() {
   const [isError, setIsError] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+
+  useEffect(() => {
+    setHashHex("");
+    setReason("");
+    setStatus("");
+    setShowConfirm(false);
+  }, [publicKey]);
 
   // Hex validation (64 chars, 0-9 a-f)
   const isValidHex = hashHex.length === 64 && /^[0-9A-Fa-f]{64}$/i.test(hashHex);
@@ -39,6 +47,14 @@ export default function RevokePage() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .accounts({ credentialAccount: credPDA, issuer: publicKey } as any)
         .rpc();
+
+      recordOptimisticActivity(publicKey, {
+        signature: txSig,
+        blockTime: Math.floor(Date.now() / 1000),
+        failed: false,
+        action: "Credential revoked",
+        credentialHash: hashHex,
+      });
         
       setStatus(`Successfully revoked on-chain. TX: ${txSig}`);
       setIsError(false);

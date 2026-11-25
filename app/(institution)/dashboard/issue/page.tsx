@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import dynamic from "next/dynamic";
 const WalletMultiButton = dynamic(
@@ -8,6 +8,7 @@ const WalletMultiButton = dynamic(
 );
 import { useCrediblyProgram } from "@/lib/solana/client";
 import { issueCredentialOnChain } from "@/lib/solana/credentials";
+import { recordOptimisticActivity } from "@/lib/solana/activity";
 import Papa from "papaparse";
 import { UploadCloud, CheckCircle2, XCircle, Loader2, Send, FileSpreadsheet, Copy } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -35,6 +36,10 @@ export default function IssuePage() {
   const [graduationYear, setGraduationYear] = useState("");
   const [marks, setMarks] = useState("");
 
+  useEffect(() => {
+    setResults([]);
+  }, [publicKey]);
+
   async function handleSingleIssue(e: React.FormEvent) {
     e.preventDefault();
     if (!publicKey || !program || !studentDid || !degree || !institution || !graduationYear || !marks) return;
@@ -55,25 +60,16 @@ export default function IssuePage() {
         },
       };
       const { txSig, credentialHash } = await issueCredentialOnChain(program, publicKey, vc);
-      setResults([{ did: studentDid, status: "Issued", txSig, credentialHash }, ...results]);
-      
-      // Simulate delivery to student wallet
-      try {
-        const studentPubkeyStr = studentDid.replace("did:sol:", "");
-        const studentStorageKey = `credibly_${studentPubkeyStr}`;
-        const existing = JSON.parse(localStorage.getItem(studentStorageKey) || "[]");
-        existing.push({
-          id: credentialHash,
-          degree,
-          institution,
-          marks,
-          issuedAt: new Date().toISOString(),
-          credentialHashHex: credentialHash
+      if (txSig && txSig !== "already_processed_check_explorer") {
+        recordOptimisticActivity(publicKey, {
+          signature: txSig,
+          blockTime: Math.floor(Date.now() / 1000),
+          failed: false,
+          action: "Credential issued",
+          credentialHash,
         });
-        localStorage.setItem(studentStorageKey, JSON.stringify(existing));
-      } catch (e) {
-        console.warn("Could not save to mock student wallet", e);
       }
+      setResults([{ did: studentDid, status: "Issued", txSig, credentialHash }, ...results]);
       
       // Clear form
       setStudentDid("");
@@ -115,25 +111,17 @@ export default function IssuePage() {
               },
             };
             const { txSig, credentialHash } = await issueCredentialOnChain(program, publicKey, vc);
+            if (txSig && txSig !== "already_processed_check_explorer") {
+              recordOptimisticActivity(publicKey, {
+                signature: txSig,
+                blockTime: Math.floor(Date.now() / 1000),
+                failed: false,
+                action: "Credential issued",
+                credentialHash,
+              });
+            }
             batch.push({ did: row.student_did, status: "Issued", txSig, credentialHash });
             
-            // Simulate delivery to student wallet
-            try {
-              const studentPubkeyStr = row.student_did.replace("did:sol:", "");
-              const studentStorageKey = `credibly_${studentPubkeyStr}`;
-              const existing = JSON.parse(localStorage.getItem(studentStorageKey) || "[]");
-              existing.push({
-                id: credentialHash,
-                degree: row.degree,
-                institution: row.institution,
-                marks: row.marks,
-                issuedAt: new Date().toISOString(),
-                credentialHashHex: credentialHash
-              });
-              localStorage.setItem(studentStorageKey, JSON.stringify(existing));
-            } catch (e) {
-              console.warn("Could not save to mock student wallet", e);
-            }
           } catch (err) {
             batch.push({ did: row.student_did, status: `Failed: ${(err as Error).message}` });
           }

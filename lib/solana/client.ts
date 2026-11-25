@@ -4,7 +4,9 @@ import { useMemo } from "react";
 import idl from "./idl/credibly.json";
 import type { Credibly } from "./idl/credibly";
 
-export const PROGRAM_ID = new web3.PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID || "11111111111111111111111111111111");
+export const PROGRAM_ID = new web3.PublicKey(
+  process.env.NEXT_PUBLIC_PROGRAM_ID || "HYLVH9iBUSroAyDViFn6fY7WirfPuv1kG89TCyvAz5fx"
+);
 
 export function useCrediblyProgram() {
   const { connection } = useConnection();
