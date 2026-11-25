@@ -1894,21 +1894,18 @@ npm run dev   # http://localhost:3000
 
 ### Production
 
-```bash
-# 1. Deploy Anchor program to Devnet then Mainnet
-solana config set --url devnet
-anchor deploy --provider.cluster devnet
+The repository is configured for a single Vercel Services project with two
+services: `app` (Next.js) and `ai` (FastAPI). In the Vercel project settings,
+select **Services** as the project framework, connect this repository, and
+deploy from the project root. The root rewrite sends public traffic to `app`;
+`ai` stays internal. The app reaches FastAPI through the `AI_SERVICE_URL`
+service binding, so do not add that variable manually in Vercel.
 
-# Update NEXT_PUBLIC_PROGRAM_ID in Vercel env vars
-
-# 2. Deploy Next.js to Vercel
-npx vercel --prod
-
-# 3. Deploy AI service
-docker build -t credibly-ai ./ai
-docker run -p 8000:8000 credibly-ai
-# or: deploy to Railway / Render with Dockerfile
-```
+Set the usual app environment variables in Vercel (for example the Devnet RPC
+URL and program ID, plus Pinata credentials if issuance should work). Local
+development continues to use `AI_SERVICE_URL=http://localhost:8000` or the
+proxy's localhost fallback. Run `vercel dev` to run both services together
+locally with Vercel bindings.
 
 ### Docker Compose
 
