@@ -29,9 +29,6 @@ export async function issueCredentialOnChain(
     program.programId
   );
 
-  console.log("Issuer:", issuer.toBase58());
-  console.log("Expected Institution PDA:", institutionAccount.toBase58());
-
   // The on-chain issue instruction requires the issuer to be in the trust
   // registry. Register this wallet on first use; the wallet signs and pays.
   const existingInstitution = await program.provider.connection.getAccountInfo(
@@ -68,7 +65,9 @@ export async function issueCredentialOnChain(
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     if (message.includes("already been processed")) {
-      console.warn("Transaction was confirmed but RPC reported it as already processed (common network jitter). Treating as success.");
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("Transaction was confirmed but RPC reported it as already processed. Treating it as success.");
+      }
       // We don't have the exact txSig unfortunately since it errored, but we know it succeeded
       txSig = "already_processed_check_explorer";
     } else {

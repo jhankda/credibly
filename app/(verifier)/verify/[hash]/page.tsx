@@ -1,16 +1,26 @@
 import { CheckCircle, XCircle, AlertCircle, Building2, Calendar, FileText, ExternalLink, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { verifyCredentialHash } from "@/lib/solana/serverVerification";
+import type { CredentialVerificationResult } from "@/lib/solana/serverVerification";
 
 export default async function VerifyResultPage({ params }: { params: Promise<{ hash: string }> }) {
   const { hash } = await params;
-  const result = await verifyCredentialHash(hash);
+  let result: CredentialVerificationResult | null = null;
+  let verificationUnavailable = false;
+  try {
+    result = await verifyCredentialHash(hash);
+  } catch (error) {
+    console.error("[Verification] Solana lookup failed:", error);
+    verificationUnavailable = true;
+  }
   const credentialExists = result?.exists ?? false;
 
   const cfg = result?.valid
     ? { icon: CheckCircle, title: "Credential Valid", sub: "Cryptographically verified on Solana.", color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200" }
     : credentialExists && result?.revoked
     ? { icon: AlertCircle, title: "Credential Revoked", sub: "Revoked by the issuing institution.", color: "text-amber-600", bg: "bg-amber-50", border: "border-amber-200" }
+    : verificationUnavailable
+    ? { icon: AlertCircle, title: "Verification Unavailable", sub: "We could not reach Solana. Please try again shortly.", color: "text-amber-600", bg: "bg-amber-50", border: "border-amber-200" }
     : { icon: XCircle, title: "Not Found", sub: "No matching credential on the network.", color: "text-red-500", bg: "bg-red-50", border: "border-red-200" };
 
   const StatusIcon = cfg.icon;

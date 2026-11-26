@@ -245,7 +245,9 @@ async function parseTransaction(
     setCachedTransaction(sig, parsedActivity);
     return parsedActivity;
   } catch (err) {
-    console.warn(`Could not parse transaction ${sig}:`, err);
+    if (process.env.NODE_ENV !== "production") {
+      console.warn(`Could not parse transaction ${sig}:`, err);
+    }
     return null;
   }
 }

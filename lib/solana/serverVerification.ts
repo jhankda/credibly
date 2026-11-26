@@ -34,19 +34,16 @@ export async function verifyCredentialHash(
   const provider = new AnchorProvider(connection, {} as never, { commitment: "confirmed" });
   const program = new Program<Credibly>(idl as Credibly, provider);
 
-  try {
-    const account = await program.account.credentialAccount.fetch(credentialPDA);
-    return {
-      valid: !account.revoked,
-      exists: true,
-      issuer: account.issuer.toBase58(),
-      holderDid: account.holderDid,
-      ipfsCid: account.ipfsCid,
-      issuedAt: new Date(account.issuedAt.toNumber() * 1000).toISOString(),
-      revoked: account.revoked,
-      credentialPDA: credentialPDA.toBase58(),
-    };
-  } catch {
-    return null;
-  }
+  const account = await program.account.credentialAccount.fetchNullable(credentialPDA);
+  if (!account) return null;
+  return {
+    valid: !account.revoked,
+    exists: true,
+    issuer: account.issuer.toBase58(),
+    holderDid: account.holderDid,
+    ipfsCid: account.ipfsCid,
+    issuedAt: new Date(account.issuedAt.toNumber() * 1000).toISOString(),
+    revoked: account.revoked,
+    credentialPDA: credentialPDA.toBase58(),
+  };
 }

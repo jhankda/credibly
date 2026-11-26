@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useCrediblyProgram, getCredentialPDA } from "@/lib/solana/client";
 import { recordOptimisticActivity } from "@/lib/solana/activity";
+import { getPublicTransactionError } from "@/lib/solana/publicErrors";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShieldAlert, AlertTriangle, Key, Info } from "lucide-react";
 
@@ -62,7 +63,7 @@ export default function RevokePage() {
       setReason("");
       setShowConfirm(false);
     } catch (err) {
-      setStatus(`Error: ${(err as Error).message}`);
+      setStatus(getPublicTransactionError(err, "revoke"));
       setIsError(true);
     } finally {
       setProcessing(false);

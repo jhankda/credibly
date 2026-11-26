@@ -7,8 +7,16 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ has
     return NextResponse.json({ valid: false, exists: false }, { status: 400 });
   }
 
-  const result = await verifyCredentialHash(hash);
-  return result
-    ? NextResponse.json(result)
-    : NextResponse.json({ valid: false, exists: false }, { status: 404 });
+  try {
+    const result = await verifyCredentialHash(hash);
+    return result
+      ? NextResponse.json(result)
+      : NextResponse.json({ valid: false, exists: false }, { status: 404 });
+  } catch (error) {
+    console.error("[Verification] Solana lookup failed:", error);
+    return NextResponse.json(
+      { valid: false, exists: false, error: "Verification is temporarily unavailable. Please try again shortly." },
+      { status: 503 }
+    );
+  }
 }

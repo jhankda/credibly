@@ -8,6 +8,7 @@ const WalletMultiButton = dynamic(
 );
 import { useCrediblyProgram } from "@/lib/solana/client";
 import { issueCredentialOnChain } from "@/lib/solana/credentials";
+import { getPublicTransactionError } from "@/lib/solana/publicErrors";
 import { recordOptimisticActivity } from "@/lib/solana/activity";
 import Papa from "papaparse";
 import { UploadCloud, CheckCircle2, XCircle, Loader2, Send, FileSpreadsheet, Copy } from "lucide-react";
@@ -78,7 +79,7 @@ export default function IssuePage() {
       // keep institution
       setGraduationYear("");
     } catch (err) {
-      setResults([{ did: studentDid, status: `Failed: ${(err as Error).message}` }, ...results]);
+      setResults([{ did: studentDid, status: `Failed: ${getPublicTransactionError(err, "issue")}` }, ...results]);
     } finally {
       setProcessing(false);
     }
@@ -123,7 +124,7 @@ export default function IssuePage() {
             batch.push({ did: row.student_did, status: "Issued", txSig, credentialHash });
             
           } catch (err) {
-            batch.push({ did: row.student_did, status: `Failed: ${(err as Error).message}` });
+            batch.push({ did: row.student_did, status: `Failed: ${getPublicTransactionError(err, "issue")}` });
           }
         }
         setResults((prev) => [...batch, ...prev]);

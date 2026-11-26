@@ -22,17 +22,18 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown upload error";
     if (message.startsWith("Missing required environment variable:")) {
+      console.error("[IPFS] Credential storage configuration is missing.");
       return NextResponse.json(
         {
-          error: "IPFS upload is not configured. Set PINATA_API_KEY and PINATA_SECRET in .env.local, then restart the dev server.",
+          error: "Credential storage is not available. Please contact the site administrator.",
         },
         { status: 503 }
       );
     }
 
-    console.error("[IPFS] Credential upload failed:", message);
+    console.error("[IPFS] Credential upload failed:", error);
     return NextResponse.json(
-      { error: `Pinata upload failed: ${message}` },
+      { error: "Credential storage is temporarily unavailable. Please try again later." },
       { status: 502 }
     );
   }

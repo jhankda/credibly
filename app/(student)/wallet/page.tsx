@@ -83,7 +83,7 @@ export default function WalletPage() {
         try { sessionStorage.setItem(cacheKey, JSON.stringify(freshCredentials)); } catch { /* Cache is optional. */ }
       } catch (error) {
         if (error instanceof Error && error.name === "AbortError") return;
-        setLoadError(error instanceof Error ? error.message : "Could not load credentials.");
+        setLoadError("Could not refresh credentials right now. Please check your connection and try again.");
         setUpdateMessage("Could not check for new credentials. Showing cached wallet data where available.");
         setLoadedAddress(address);
       } finally {
