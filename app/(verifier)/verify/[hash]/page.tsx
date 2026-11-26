@@ -1,32 +1,15 @@
 import { CheckCircle, XCircle, AlertCircle, Building2, Calendar, FileText, ExternalLink, ArrowLeft } from "lucide-react";
 import Link from "next/link";
-
-interface VerifyResult {
-  valid: boolean;
-  exists: boolean;
-  issuer?: string;
-  issuedAt?: string;
-  revoked?: boolean;
-  ipfsCid?: string;
-  institutionTier?: number;
-}
-
-async function getResult(hash: string): Promise<VerifyResult> {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/verify/${hash}`,
-    { cache: "no-store" }
-  );
-  if (!res.ok) return { valid: false, exists: false };
-  return res.json();
-}
+import { verifyCredentialHash } from "@/lib/solana/serverVerification";
 
 export default async function VerifyResultPage({ params }: { params: Promise<{ hash: string }> }) {
   const { hash } = await params;
-  const result = await getResult(hash);
+  const result = await verifyCredentialHash(hash);
+  const credentialExists = result?.exists ?? false;
 
-  const cfg = result.valid
+  const cfg = result?.valid
     ? { icon: CheckCircle, title: "Credential Valid", sub: "Cryptographically verified on Solana.", color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200" }
-    : result.exists && result.revoked
+    : credentialExists && result?.revoked
     ? { icon: AlertCircle, title: "Credential Revoked", sub: "Revoked by the issuing institution.", color: "text-amber-600", bg: "bg-amber-50", border: "border-amber-200" }
     : { icon: XCircle, title: "Not Found", sub: "No matching credential on the network.", color: "text-red-500", bg: "bg-red-50", border: "border-red-200" };
 
@@ -53,7 +36,7 @@ export default async function VerifyResultPage({ params }: { params: Promise<{ h
             <p className="font-mono text-xs text-gray-600 break-all">{hash}</p>
           </div>
 
-          {result.exists && (
+          {credentialExists && result && (
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-gray-50 border border-gray-100 rounded-lg p-3">
@@ -61,11 +44,6 @@ export default async function VerifyResultPage({ params }: { params: Promise<{ h
                     <Building2 className="w-3 h-3" /> Issuer
                   </div>
                   <p className="text-sm text-gray-800 font-medium break-all">{result.issuer ?? "Unknown"}</p>
-                  {result.institutionTier && (
-                    <span className="mt-1.5 inline-flex text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200 px-1.5 py-0.5 rounded">
-                      Tier {result.institutionTier}
-                    </span>
-                  )}
                 </div>
                 <div className="bg-gray-50 border border-gray-100 rounded-lg p-3">
                   <div className="flex items-center gap-1 text-[11px] uppercase tracking-wider font-semibold text-gray-400 mb-1">
